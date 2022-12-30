@@ -125,13 +125,24 @@ namespace Default
                 default:
                     break;
             }
-            m_ToggleAnimator.SetBool("IsClicked", true);
+            m_ToggleAnimator.SetBool("CanDown", true);
+            m_ToggleAnimator.SetBool("CanUp", false);
         }
 
         private void ToggleClickFinish()
         {
             CurToggleStateNum = CurToggleStateNum < toggleStateNum ? CurToggleStateNum += 1 : 0;
-            Debug.Log("curStateNum:\t" + CurToggleStateNum);
+            switch (toggleType)
+            {
+                case ToggleType.AutoReturn:
+                    break;
+                case ToggleType.ManualReturn:
+                    break;
+                case ToggleType.TimerReturn:
+                    break;
+                default:
+                    break;
+            }
         }
 
         private void ToggleClickUp()
@@ -149,13 +160,16 @@ namespace Default
                 default:
                     break;
             }
-            m_ToggleAnimator.SetBool("IsClicked", false);
         }
 
 
         private void ToggleStateChanged(int stateNum)
         {
-
+            if (stateNum == 0)
+            {
+                m_ToggleAnimator.SetBool("CanDown", false);
+                m_ToggleAnimator.SetBool("CanUp", true);
+            }
         }
     }
 }
