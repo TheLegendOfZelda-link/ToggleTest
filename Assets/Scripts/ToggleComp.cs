@@ -15,7 +15,29 @@ namespace Default
 
     public class ToggleComp : MonoBehaviour
     {
+        public enum ToggleInputState
+        {
+            Idle,               //未操作时（目前无法判断回复为Idle的条件）！！
+            Down,             //操作按下时
+            Up,                 //操作松手时
+        }
+
         public ToggleType toggleType;
+
+        private ToggleInputState inputState;
+
+        public ToggleInputState InputState
+        {
+            get { return inputState; }
+            set
+            {
+                if (inputState != value)
+                {
+                    inputState = value;
+                    OnToggleInputStateChanged?.Invoke(inputState);
+                }
+            }
+        }
 
         //开关的点击事件
         [HideInInspector]
@@ -27,19 +49,23 @@ namespace Default
 
         //开关当前状态相关
         public int toggleStateNum = 1;
-        private int curStateNum = 0;
-        public int CurStateNum
+        private int curToggleStateNum = 0;
+        public int CurToggleStateNum
         {
-            get { return curStateNum; }
+            get { return curToggleStateNum; }
             set
             {
-                if (curStateNum != value)
+                if (curToggleStateNum != value)
                 {
-                    curStateNum = value;
-                    OnToggleStateChanged?.Invoke(curStateNum);
+                    curToggleStateNum = value;
+                    OnToggleStateChanged?.Invoke(curToggleStateNum);
                 }
             }
         }
+
+        //开关输入的状态时间
+        [HideInInspector]
+        public UnityEvent<ToggleInputState> OnToggleInputStateChanged;
 
         //开关的状态事件
         [HideInInspector]
@@ -51,9 +77,12 @@ namespace Default
 
         private ToggleClick m_ToggleClick;
 
+        private Animator m_ToggleAnimator;
+
         private void Awake()
         {
             m_ToggleClick = GetComponent<ToggleClick>();
+            m_ToggleAnimator = GetComponent<Animator>();
 
             OnToggleClickDown.AddListener(ToggleClickDown);
             OnToggleClickFinish.AddListener(ToggleClickFinish);
@@ -68,7 +97,7 @@ namespace Default
 
         private void Update()
         {
-            if (toggleType == ToggleType.TimerReturn && CurStateNum != 0)
+            if (toggleType == ToggleType.TimerReturn && CurToggleStateNum != 0 && inputState == ToggleInputState.Up)
             {
                 if (timerTime < timerLength)
                 {
@@ -77,13 +106,14 @@ namespace Default
                 else
                 {
                     timerTime = 0;
-                    CurStateNum = 0;
+                    CurToggleStateNum = 0;
                 }
             }
         }
 
         private void ToggleClickDown()
         {
+            InputState = ToggleInputState.Down;
             switch (toggleType)
             {
                 case ToggleType.AutoReturn:
@@ -95,20 +125,22 @@ namespace Default
                 default:
                     break;
             }
+            m_ToggleAnimator.SetBool("IsClicked", true);
         }
 
         private void ToggleClickFinish()
         {
-            CurStateNum = CurStateNum < toggleStateNum ? CurStateNum += 1 : 0;
-            Debug.Log("curStateNum:\t" + CurStateNum);
+            CurToggleStateNum = CurToggleStateNum < toggleStateNum ? CurToggleStateNum += 1 : 0;
+            Debug.Log("curStateNum:\t" + CurToggleStateNum);
         }
 
         private void ToggleClickUp()
         {
+            InputState = ToggleInputState.Up;
             switch (toggleType)
             {
                 case ToggleType.AutoReturn:
-                    CurStateNum = 0;
+                    CurToggleStateNum = 0;
                     break;
                 case ToggleType.ManualReturn:
                     break;
@@ -117,6 +149,7 @@ namespace Default
                 default:
                     break;
             }
+            m_ToggleAnimator.SetBool("IsClicked", false);
         }
 
 

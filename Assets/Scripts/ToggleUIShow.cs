@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.UI;
 
 namespace Default
 {
@@ -11,18 +12,26 @@ namespace Default
 	{
 		public ToggleComp toggleComp;
 
-        private TextMeshProUGUI textMeshProUGUI;
+        private Text showText;
 
         private void Awake()
         {
             toggleComp.OnToggleStateChanged.AddListener(UIShowStateChanged);
+            toggleComp.OnToggleInputStateChanged.AddListener(UIShowToggleInputChanged);
 
-            textMeshProUGUI = GetComponent<TextMeshProUGUI>();
+            showText = GetComponent<Text>();
         }
+
 
         private void UIShowStateChanged(int curStateCount)
         {
-            textMeshProUGUI.text = $"CurState + {curStateCount}";
+            showText.text = $"CurState:\t {curStateCount}";
+        }
+
+
+        private void UIShowToggleInputChanged(ToggleComp.ToggleInputState inputstate)
+        {
+            showText.text = showText.text + $"\nInputState:\t{inputstate}";
         }
     }
 }
